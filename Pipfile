@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pep8 = "*"
+autopep8 = "*"
+
+[packages]
+flask = "*"
+bs4 = "*"
+lxml = "*"
+requests = "*"
+gspread = "*"
+oauth2client = "*"
+daiquiri = "*"
+
+[requires]
+python_version = "3.6"
