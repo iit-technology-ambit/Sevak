@@ -9,8 +9,6 @@ from flask import Flask
 from bs4 import BeautifulSoup
 from oauth2client.service_account import ServiceAccountCredentials
 
-# app = Flask(__name__)
-# app.config.from_pyfile('config.cfg')
 
 # LOG = getLogger(__name__)
 # LOG.info("Set up Logging Successfully!")
@@ -18,10 +16,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 
-# departmentList = ['AE', 'AG', 'AR', 'BT', 'CE', 'CH', 'CS', 'CY', 'EC',
-#                   'EE', 'IM', 'GG', 'HS', 'MA', 'ME', 'MT', 'MI', 'NA', 'PH', 'QE']
-
-departmentList = ['GG', 'HS', 'ME', 'MT', 'MI', 'NA', 'PH', 'QE']
+departmentList = ['AE', 'AG', 'AR', 'BT', 'CE', 'CH', 'CS', 'CY', 'EC',
+                  'EE', 'IM', 'GG', 'HS', 'MA', 'ME', 'MT', 'MI', 'NA', 'PH']
 
 baseURL = "http://www.iitkgp.ac.in"
 
@@ -98,6 +94,9 @@ def gScholarScrape(faculty):
     searchURL = "https://scholar.google.com/citations?view_op=search_authors&mauthors={}&hl=en&oi=ao".format(
         searchTerm)
     r = requests.get(searchURL,headers = {'User-agent': 'your bot 0.1'})
+
+    if r.status_code == 429:
+        time.sleep(10800)
 
     soup = BeautifulSoup(r.content, "lxml")
     try:
