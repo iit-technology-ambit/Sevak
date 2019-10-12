@@ -1,2 +1,2 @@
-name = 'gresearch'
+name = 'Sevak'
 version = '1.0.0'

@@ -4,6 +4,7 @@ import lxml
 import time
 import gspread
 
+from threading import Thread
 from logging import getLogger
 from flask import Flask
 from bs4 import BeautifulSoup
@@ -21,6 +22,12 @@ departmentList = ['AE', 'AG', 'AR', 'BT', 'CE', 'CH', 'CS', 'CY', 'EC',
 
 baseURL = "http://www.iitkgp.ac.in"
 
+def make_async(f):
+    """Decorate a function to allow running async tasks in threads."""
+    def wrapper(*args, **kwargs):
+        thr = Thread(target=f, args=args, kwargs=kwargs)
+        thr.start()
+    return wrapper
 
 
 def profScrape(url):
@@ -120,9 +127,13 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(
     'client_secret.json', scope)
 client = gspread.authorize(creds)
 
-sheet = client.open("gresearch")
+try:
+    sheet = client.open("Sevak - Results")
+except:
+    sheet = client.create("Sevak - Results")
 
 
+@make_async
 @app.route('/')
 def index():
     depIndex = 0
@@ -172,7 +183,6 @@ def index():
         print("Completed for department: " + department)
         time.sleep(10)
     return "Updated successfully!"
-
 
 if __name__ == "__main__":
     app.run()
