@@ -1,15 +1,16 @@
 import os
-import requests
-import lxml
+import sys
 import time
-import gspread
-
-from threading import Thread
 from logging import getLogger
-from flask import Flask
-from bs4 import BeautifulSoup
-from oauth2client.service_account import ServiceAccountCredentials
+from threading import Thread
 
+import lxml
+import requests
+from bs4 import BeautifulSoup
+from flask import Flask
+
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # LOG = getLogger(__name__)
 # LOG.info("Set up Logging Successfully!")
@@ -17,7 +18,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 
-departmentList = ['AE', 'AG', 'AR', 'BT', 'CE', 'CH', 'CS', 'CY', 'EC',
+n = len(sys.argv)
+if n != 1:
+    departmentList = sys.argv
+    departmentList = departmentList[1:]
+
+else:
+    departmentList = ['AE', 'AG', 'AR', 'BT', 'CE', 'CH', 'CS', 'CY', 'EC',
                   'EE', 'IM', 'GG', 'HS', 'MA', 'ME', 'MT', 'MI', 'NA', 'PH']
 
 baseURL = "http://www.iitkgp.ac.in"
@@ -121,68 +128,68 @@ def gScholarScrape(faculty):
     return hIndex, topPapers
 
 
-scope = ['https://spreadsheets.google.com/feeds' +
-         ' ' + 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    'client_secret.json', scope)
-client = gspread.authorize(creds)
+# scope = ['https://spreadsheets.google.com/feeds' +
+#          ' ' + 'https://www.googleapis.com/auth/drive']
+# creds = ServiceAccountCredentials.from_json_keyfile_name(
+#     'client_secret.json', scope)
+# client = gspread.authorize(creds)
 
-try:
-    sheet = client.open("Sevak - Results")
-except:
-    sheet = client.create("Sevak - Results")
+# try:
+#     sheet = client.open("Sevak - Results")
+# except:
+#     sheet = client.create("Sevak - Results")
 
 
-@make_async
-@app.route('/')
-def index():
-    depIndex = 0
-    for department in departmentList:
-        depIndex += 1
-        if depIndex % 3 == 0:
-            time.sleep(20)
-        print("Starting for Department: " + department)
-        try:
-            worksheet = sheet.add_worksheet(
-                title=department, rows="100", cols="20")
-            worksheet.insert_row(
-                ["Name", "Email", "Phone", "H-Index", "Top Paper-1", "Top Paper-2", "Research Area 1", "Research Area 2", "Research Area 3"], 1)
-        except:
-            worksheet = sheet.worksheet(department)
-            worksheet.insert_row(
-                ["Name", "Email", "Phone", "H-Index", "Top Paper-1", "Top Paper-2", "Research Area 1", "Research Area 2", "Research Area 3"], 1)
-            print("Deleting previous rows!")
-            for x in reversed(range(2, min(50, worksheet.row_count))):
-                try:
-                    worksheet.delete_row(x)
-                except:
-                    pass
-            print("Successfully deleted rows!")
+# @make_async
+# @app.route('/')
+# def index():
+#     depIndex = 0
+#     for department in departmentList:
+#         depIndex += 1
+#         if depIndex % 3 == 0:
+#             time.sleep(20)
+#         print("Starting for Department: " + department)
+#         try:
+#             worksheet = sheet.add_worksheet(
+#                 title=department, rows="100", cols="20")
+#             worksheet.insert_row(
+#                 ["Name", "Email", "Phone", "H-Index", "Top Paper-1", "Top Paper-2", "Research Area 1", "Research Area 2", "Research Area 3"], 1)
+#         except:
+#             worksheet = sheet.worksheet(department)
+#             worksheet.insert_row(
+#                 ["Name", "Email", "Phone", "H-Index", "Top Paper-1", "Top Paper-2", "Research Area 1", "Research Area 2", "Research Area 3"], 1)
+#             print("Deleting previous rows!")
+#             for x in reversed(range(2, min(50, worksheet.row_count))):
+#                 try:
+#                     worksheet.delete_row(x)
+#                 except:
+#                     pass
+#             print("Successfully deleted rows!")
 
-        time.sleep(10)
-        researchList, contactInfo = departmentScrape(department)
-        index = 2
-        for faculty, areas in researchList.items():
-            print("Starting for Professor: " + faculty)
-            print("Getting Google Scholar Data for : " + faculty)
-            hIndex, topPapers = gScholarScrape(faculty)
-            print("Successfully received data for faculty.")
-            row = []
-            row.append(faculty)
-            row.append(contactInfo[faculty]["email"])
-            row.append(contactInfo[faculty]["phone"])
-            row.append(hIndex)
-            for paper in topPapers:
-                row.append(paper)
+#         time.sleep(10)
+#         researchList, contactInfo = departmentScrape(department)
+#         index = 2
+#         for faculty, areas in researchList.items():
+#             print("Starting for Professor: " + faculty)
+#             print("Getting Google Scholar Data for : " + faculty)
+#             hIndex, topPapers = gScholarScrape(faculty)
+#             print("Successfully received data for faculty.")
+#             row = []
+#             row.append(faculty)
+#             row.append(contactInfo[faculty]["email"])
+#             row.append(contactInfo[faculty]["phone"])
+#             row.append(hIndex)
+#             for paper in topPapers:
+#                 row.append(paper)
 
-            for area in areas:
-                row.append(area)
-            worksheet.insert_row(row, index)
-            time.sleep(1)
-            index += 1
-        print("Completed for department: " + department)
-        time.sleep(10)
-    return "Updated successfully!"
+#             for area in areas:
+#                 row.append(area)
+#             worksheet.insert_row(row, index)
+#             time.sleep(1)
+#             index += 1
+#         print("Completed for department: " + department)
+#         time.sleep(10)
+#     return "Updated successfully!"
 
-if __name__ == "__main__":
-    app.run()
+# if __name__ == "__main__":
+#     app.run()
