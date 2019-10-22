@@ -15,6 +15,7 @@ requests = "*"
 gspread = "*"
 oauth2client = "*"
 daiquiri = "*"
+argparse = "*"
 
 [requires]
 python_version = "3.6"
